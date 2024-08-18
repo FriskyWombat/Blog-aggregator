@@ -51,6 +51,10 @@ func main() {
 	router.Post("/users", cfg.newUserHandleFunc)
 	router.Get("/users", cfg.authenticate(cfg.getUserHandleFunc))
 	router.Post("/feeds", cfg.authenticate(cfg.newFeedHandleFunc))
+	router.Get("/feeds", cfg.getFeedsHandleFunc)
+	router.Post("/feed_follows", cfg.authenticate(cfg.newFollowHandleFunc))
+	router.Get("/feed_follows", cfg.authenticate(cfg.getFollowsHandleFunc))
+	router.Delete("/feed_follows/{id}", cfg.authenticate(cfg.unfollowHandleFunc))
 
 	server := http.Server{
 		Addr:    ":" + port,

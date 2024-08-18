@@ -31,7 +31,7 @@ func toFeed(f database.Feed) Feed {
 	}
 }
 
-func (cfg *apiConfig) newFeed(ctxt context.Context, name string, url string, userID uuid.UUID) (Feed, error) {
+func (cfg *apiConfig) newFeed(ctxt context.Context, name string, url string, userID uuid.UUID) (Feed, Follow, error) {
 	id := uuid.New()
 	now := time.Now().UTC()
 	param := database.CreateFeedParams{
@@ -44,9 +44,13 @@ func (cfg *apiConfig) newFeed(ctxt context.Context, name string, url string, use
 	}
 	f, err := cfg.DB.CreateFeed(ctxt, param)
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, Follow{}, err
 	}
-	return toFeed(f), nil
+	fol, err := cfg.newFollow(ctxt, f.ID, userID)
+	if err != nil {
+		return Feed{}, Follow{}, err
+	}
+	return toFeed(f), fol, nil
 }
 
 func (cfg *apiConfig) newFeedHandleFunc(w http.ResponseWriter, r *http.Request) {
@@ -66,10 +70,27 @@ func (cfg *apiConfig) newFeedHandleFunc(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, 500, "Failed to retrieve user data from context")
 		return
 	}
-	feed, err := cfg.newFeed(r.Context(), req.Name, req.URL, user.ID)
+	feed, follow, err := cfg.newFeed(r.Context(), req.Name, req.URL, user.ID)
 	if err != nil {
 		respondWithError(w, 500, err.Error())
 		return
 	}
-	respondWithJSON(w, 201, feed)
+	type feedFollowResp struct {
+		Feed   Feed   `json:"feed"`
+		Follow Follow `json:"feed_follow"`
+	}
+	respondWithJSON(w, 201, feedFollowResp{feed, follow})
+}
+
+func (cfg *apiConfig) getFeedsHandleFunc(w http.ResponseWriter, r *http.Request) {
+	feeds, err := cfg.DB.GetFeeds(r.Context())
+	if err != nil {
+		respondWithError(w, 500, "Database error")
+		return
+	}
+	fr := []Feed{}
+	for _, f := range feeds {
+		fr = append(fr, toFeed(f))
+	}
+	respondWithJSON(w, 200, fr)
 }
