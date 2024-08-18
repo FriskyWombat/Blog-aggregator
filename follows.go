@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Follow struct with labeled fields for marshaling json
 type Follow struct {
 	ID        uuid.UUID `json:"id"`
 	FeedID    uuid.UUID `json:"feed_id"`
@@ -31,13 +32,10 @@ func toFollow(f database.Follow) Follow {
 
 func (cfg *apiConfig) newFollow(ctxt context.Context, feedID uuid.UUID, userID uuid.UUID) (Follow, error) {
 	id := uuid.New()
-	now := time.Now().UTC()
 	param := database.CreateFollowParams{
-		ID:        id,
-		UserID:    userID,
-		FeedID:    feedID,
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID:     id,
+		UserID: userID,
+		FeedID: feedID,
 	}
 	f, err := cfg.DB.CreateFollow(ctxt, param)
 	if err != nil {

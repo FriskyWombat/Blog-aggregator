@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -18,27 +17,20 @@ INSERT INTO
 VALUES
     (
         $1,
+        (NOW() AT TIME ZONE 'utc'),
+        (NOW() AT TIME ZONE 'utc'),
         $2,
-        $3,
-        $4,
         ENCODE(SHA256(RANDOM() :: TEXT :: bytea), 'hex')
     ) RETURNING id, created_at, updated_at, name, api_key
 `
 
 type CreateUserParams struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
+	ID   uuid.UUID
+	Name string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.Name,
-	)
+	row := q.db.QueryRowContext(ctx, createUser, arg.ID, arg.Name)
 	var i User
 	err := row.Scan(
 		&i.ID,

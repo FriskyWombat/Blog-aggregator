@@ -10,37 +10,36 @@ import (
 	"github.com/google/uuid"
 )
 
-// Feed struct with labeled fields for exporint to json
+// Feed struct with labeled fields for marshaling json
 type Feed struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	UserID    uuid.UUID `json:"user_id"`
+	ID            uuid.UUID `json:"id"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Name          string    `json:"name"`
+	URL           string    `json:"url"`
+	UserID        uuid.UUID `json:"user_id"`
+	LastFetchedAt time.Time `json:"last_fetched_at"`
 }
 
 func toFeed(f database.Feed) Feed {
 	return Feed{
-		ID:        f.ID,
-		CreatedAt: f.CreatedAt,
-		UpdatedAt: f.UpdatedAt,
-		Name:      f.Name,
-		URL:       f.Url,
-		UserID:    f.UserID,
+		ID:            f.ID,
+		CreatedAt:     f.CreatedAt,
+		UpdatedAt:     f.UpdatedAt,
+		Name:          f.Name,
+		URL:           f.Url,
+		UserID:        f.UserID,
+		LastFetchedAt: f.LastFetchedAt,
 	}
 }
 
 func (cfg *apiConfig) newFeed(ctxt context.Context, name string, url string, userID uuid.UUID) (Feed, Follow, error) {
 	id := uuid.New()
-	now := time.Now().UTC()
 	param := database.CreateFeedParams{
-		ID:        id,
-		CreatedAt: now,
-		UpdatedAt: now,
-		Name:      name,
-		Url:       url,
-		UserID:    userID,
+		ID:     id,
+		Name:   name,
+		Url:    url,
+		UserID: userID,
 	}
 	f, err := cfg.DB.CreateFeed(ctxt, param)
 	if err != nil {

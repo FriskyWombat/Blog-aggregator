@@ -4,9 +4,9 @@ INSERT INTO
 VALUES
     (
         $1,
+        (NOW() AT TIME ZONE 'utc'),
+        (NOW() AT TIME ZONE 'utc'),
         $2,
-        $3,
-        $4,
         ENCODE(SHA256(RANDOM() :: TEXT :: bytea), 'hex')
     ) RETURNING *;
 

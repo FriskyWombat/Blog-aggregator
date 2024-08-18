@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,27 +15,19 @@ const createFollow = `-- name: CreateFollow :one
 INSERT INTO
     follows (id, feed_id, user_id, created_at, updated_at)
 VALUES
-    ($1, $2, $3, $4, $5)
+    ($1, $2, $3, (NOW() AT TIME ZONE 'utc'), (NOW() AT TIME ZONE 'utc'))
 RETURNING
     id, created_at, updated_at, user_id, feed_id
 `
 
 type CreateFollowParams struct {
-	ID        uuid.UUID
-	FeedID    uuid.UUID
-	UserID    uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID     uuid.UUID
+	FeedID uuid.UUID
+	UserID uuid.UUID
 }
 
 func (q *Queries) CreateFollow(ctx context.Context, arg CreateFollowParams) (Follow, error) {
-	row := q.db.QueryRowContext(ctx, createFollow,
-		arg.ID,
-		arg.FeedID,
-		arg.UserID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createFollow, arg.ID, arg.FeedID, arg.UserID)
 	var i Follow
 	err := row.Scan(
 		&i.ID,

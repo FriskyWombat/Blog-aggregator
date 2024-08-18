@@ -56,6 +56,7 @@ func main() {
 	router.Get("/feed_follows", cfg.authenticate(cfg.getFollowsHandleFunc))
 	router.Delete("/feed_follows/{id}", cfg.authenticate(cfg.unfollowHandleFunc))
 
+	go cfg.fetchLoop(context.TODO())
 	server := http.Server{
 		Addr:    ":" + port,
 		Handler: router,

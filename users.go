@@ -32,12 +32,9 @@ func toUser(u database.User) User {
 
 func (cfg *apiConfig) newUser(ctxt context.Context, name string) (User, error) {
 	id := uuid.New()
-	now := time.Now().UTC()
 	param := database.CreateUserParams{
-		ID:        id,
-		CreatedAt: now,
-		UpdatedAt: now,
-		Name:      name,
+		ID:   id,
+		Name: name,
 	}
 	u, err := cfg.DB.CreateUser(ctxt, param)
 	if err != nil {
